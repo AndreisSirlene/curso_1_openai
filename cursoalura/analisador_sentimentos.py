@@ -1,4 +1,5 @@
 from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 import os
 
@@ -51,13 +52,22 @@ def analisador_sentimentos(produto):
         }
     ]
     
-    response = cliente.chat.completions.create(
-        messages= lista_mensagens,
-        model= model
-    )
+    try:
+        response = cliente.chat.completions.create(
+            messages= lista_mensagens,
+            model= model
+        )
+        
+        text_response = response.choices[0].message.content
+        save(r"data\\analise-" + produto + ".txt", text_response)
+    except openai.AuthenticationError as e:
+        print(f"Erro de Autenticação: {e}")
+    except openai.APIError as e:
+        print(f"Erro de API: {e}")
     
-    text_response = response.choices[0].message.content
-    save(r"data\\analise-" + produto + ".txt", text_response)
-    
-analisador_sentimentos("Maquiagem mineral")
+#analisador_sentimentos("Maquiagem mineral")
+#To analise diferent files in a loop we can change the last line and add a list
+list_products = ["Camisetas de algodão orgânico", "Jeans feitos com materiais reciclados", "Maquiagem mineral"] 
+for p in list_products:
+    analisador_sentimentos(p)
     
